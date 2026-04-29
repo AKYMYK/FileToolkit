@@ -4,6 +4,7 @@ Provides subcommands: encrypt, decrypt, convert, rename, hash, split, merge, bac
 """
 import argparse
 import sys
+import os
 from .encryptor import encrypt_file, decrypt_file
 from .converter import convert_encoding
 from .renamer import batch_rename
