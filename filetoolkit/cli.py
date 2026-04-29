@@ -1,6 +1,6 @@
 """
 Command-line interface for FileToolkit.
-Provides subcommands: encrypt, decrypt, convert, rename, hash, split, merge, backup.
+Provides subcommands: encrypt, decrypt, convert, rename, hash, split, merge, backup, fileinfo, clean.
 """
 import argparse
 import sys
@@ -11,6 +11,8 @@ from .renamer import batch_rename
 from .hasher import compute_hash, verify_hash
 from .splitter import split_by_size, split_by_parts, merge_files
 from .backup import backup_file, backup_directory
+from .fileinfo import generate_report, file_age_summary, total_size_of_directory
+from .cleaner import remove_empty_dirs, delete_temp_files, delete_old_files, clean_by_extension
 
 def main():
     parser = argparse.ArgumentParser(
@@ -76,6 +78,32 @@ def main():
     backup_parser.add_argument('--backup-dir', default='./backup', help='Backup directory')
     backup_parser.add_argument('--no-timestamp', action='store_true', help='Do not append timestamp')
 
+    # ---------- fileinfo ----------
+    info_parser = subparsers.add_parser('fileinfo', help='Show file/directory information')
+    info_sub = info_parser.add_subparsers(dest='info_command')
+    info_report = info_sub.add_parser('report', help='Generate directory report')
+    info_report.add_argument('--directory', required=True, help='Directory to analyze')
+    info_age = info_sub.add_parser('age', help='Show file age details')
+    info_age.add_argument('--file', required=True, help='File to inspect')
+
+    # ---------- clean ----------
+    clean_parser = subparsers.add_parser('clean', help='Clean up directories')
+    clean_sub = clean_parser.add_subparsers(dest='clean_command')
+    clean_empty = clean_sub.add_parser('empty-dirs', help='Remove empty directories')
+    clean_empty.add_argument('--directory', required=True)
+    clean_empty.add_argument('--execute', action='store_true', help='Actually delete (default dry-run)')
+    clean_temp = clean_sub.add_parser('temp', help='Delete temporary files')
+    clean_temp.add_argument('--directory', required=True)
+    clean_temp.add_argument('--execute', action='store_true', help='Actually delete')
+    clean_old = clean_sub.add_parser('old', help='Delete old files')
+    clean_old.add_argument('--directory', required=True)
+    clean_old.add_argument('--days', type=int, default=30, help='Age threshold in days')
+    clean_old.add_argument('--execute', action='store_true', help='Actually delete')
+    clean_ext = clean_sub.add_parser('ext', help='Delete files by extension')
+    clean_ext.add_argument('--directory', required=True)
+    clean_ext.add_argument('--extensions', nargs='+', required=True, help='Extensions to delete (e.g. .tmp .log)')
+    clean_ext.add_argument('--execute', action='store_true', help='Actually delete')
+
     args = parser.parse_args()
 
     success = False
@@ -120,6 +148,43 @@ def main():
             else:
                 success = backup_file(args.input, args.backup_dir,
                                       not args.no_timestamp)
+        except Exception as e:
+            print(f"Error: {e}")
+    elif args.command == 'fileinfo':
+        try:
+            if args.info_command == 'report':
+                print(generate_report(args.directory))
+                success = True
+            elif args.info_command == 'age':
+                info = file_age_summary(args.file)
+                for k, v in info.items():
+                    print(f"{k}: {v}")
+                success = True
+        except Exception as e:
+            print(f"Error: {e}")
+    elif args.command == 'clean':
+        dry = not getattr(args, 'execute', False)
+        try:
+            if args.clean_command == 'empty-dirs':
+                removed = remove_empty_dirs(args.directory, dry_run=dry)
+                action = "Would remove" if dry else "Removed"
+                print(f"{action} {len(removed)} empty directories.")
+                success = True
+            elif args.clean_command == 'temp':
+                deleted = delete_temp_files(args.directory, dry_run=dry)
+                action = "Would delete" if dry else "Deleted"
+                print(f"{action} {len(deleted)} temp files.")
+                success = True
+            elif args.clean_command == 'old':
+                deleted = delete_old_files(args.directory, args.days, dry_run=dry)
+                action = "Would delete" if dry else "Deleted"
+                print(f"{action} {len(deleted)} old files (> {args.days} days).")
+                success = True
+            elif args.clean_command == 'ext':
+                deleted = clean_by_extension(args.directory, args.extensions, dry_run=dry)
+                action = "Would delete" if dry else "Deleted"
+                print(f"{action} {len(deleted)} files with extensions {args.extensions}.")
+                success = True
         except Exception as e:
             print(f"Error: {e}")
 
