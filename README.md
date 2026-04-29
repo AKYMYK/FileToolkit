@@ -45,7 +45,7 @@ python -m filetoolkit.cli --help
 - pycryptodome（文件加密）
 - chardet（编码检测）
 
-详见 [requirements.txt](./requirements.txt)。
+详见 [requirements.txt].
 
 ## 命令行使用示例
 
@@ -168,7 +168,7 @@ FileToolkit/
 - 执行动态代码（无 `exec`, `eval`, `os.system` 调用等）
 - 偷偷上传数据或记录键盘鼠标
 
-安全测试方法见 [SECURITY.md](./SECURITY.md)。
+安全测试方法见 [SECURITY.md].
 
 ## 许可协议
 
