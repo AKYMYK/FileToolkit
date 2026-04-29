@@ -6,7 +6,7 @@ class FileToolkitError(Exception):
     """Base exception for all FileToolkit errors."""
     pass
 
-class ToolkitFileNotFoundError(FileToolkitError):
+class FileNotFoundError(FileToolkitError):
     """Raised when a specified file does not exist."""
     pass
 
