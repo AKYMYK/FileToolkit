@@ -1,7 +1,6 @@
 """
 Simple file backup module.
 """
-import os
 import shutil
 from datetime import datetime
 from .utils import is_file_safe, is_dir_safe
