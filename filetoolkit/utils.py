@@ -1,7 +1,8 @@
 """
-Utility functions: logging, file validation, and progress display.
+Utility functions: logging, file validation, progress, etc.
 """
 import os
+import sys
 import logging
 
 logger = logging.getLogger("filetoolkit")
@@ -46,3 +47,21 @@ def confirm_overwrite(path: str) -> bool:
 def set_log_level(verbose: bool):
     """Enable debug logging if verbose is True."""
     _ch.setLevel(logging.DEBUG if verbose else logging.INFO)
+
+def print_progress_bar(iteration, total, prefix='', suffix='', length=50, fill='█'):
+    """Print a text-based progress bar."""
+    percent = ("{0:.1f}").format(100 * (iteration / float(total)))
+    filled = int(length * iteration // total)
+    bar = fill * filled + '-' * (length - filled)
+    sys.stdout.write(f'\r{prefix} |{bar}| {percent}% {suffix}')
+    sys.stdout.flush()
+    if iteration == total:
+        print()
+
+def human_readable_size(size_bytes: int) -> str:
+    """Convert bytes to human-readable format."""
+    for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+        if abs(size_bytes) < 1024.0:
+            return f"{size_bytes:3.1f} {unit}"
+        size_bytes /= 1024.0
+    return f"{size_bytes:.1f} PB"
