@@ -114,7 +114,6 @@ def main():
             print(f"Error: {e}")
     elif args.command == 'backup':
         try:
-            import os
             if os.path.isdir(args.input):
                 success = backup_directory(args.input, args.backup_dir,
                                            not args.no_timestamp)
