@@ -25,13 +25,12 @@ def compute_hash(file_path: str, algorithm: str = 'sha256') -> str:
     return hash_obj.hexdigest()
 
 def verify_hash(file_path: str, expected_hash: str, algorithm: str = 'sha256') -> bool:
-    """
-    Verify that the file's hash matches the expected value.
-    
-    Returns True if they match, False otherwise.
-    """
-    actual = compute_hash(file_path, algorithm)
-    return actual == expected_hash
+    """Verify that the file's hash matches the expected value. Returns False on any error."""
+    try:
+        actual = compute_hash(file_path, algorithm)
+        return actual == expected_hash
+    except Exception:
+        return False
 
 def hash_multiple_files(file_paths: list, algorithm: str = 'sha256') -> dict:
     """
